@@ -1,0 +1,12 @@
+run = "python app_mock.py"
+modules = ["python-3.10:v18-20230608-322e88b"]
+
+[packager]
+language = "python3"
+ignoredPaths = ["__pycache__"]
+
+[packager.features]
+enableGuessImports = true
+
+[env]
+PYTHONUNBUFFERED = "1"
