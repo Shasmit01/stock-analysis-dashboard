@@ -7,9 +7,12 @@ def clean_stock_data(stock_data):
     for ticker, df in stock_data.items():
         df_clean = df.copy()
 
-        df_clean.fillna(method='ffill', inplace=True)
-        df_clean.fillna(method='bfill', inplace=True)
+        df_clean = df_clean.ffill()
+        df_clean = df_clean.bfill()
         df_clean = df_clean.dropna()
+
+        if 'Adj Close' not in df_clean.columns and 'Close' in df_clean.columns:
+            df_clean['Adj Close'] = df_clean['Close']
 
         df_clean['Daily_Return'] = df_clean['Adj Close'].pct_change()
         df_clean['Cumulative_Return'] = (1 + df_clean['Daily_Return']).cumprod() - 1

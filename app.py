@@ -11,20 +11,36 @@ app = dash.Dash(__name__)
 PORTFOLIO = ["AAPL", "MSFT", "JPM", "JNJ", "XOM"]
 
 print("Loading stock data...")
-raw_data = fetch_stock_data(PORTFOLIO, period_years=3)
-cleaned_data = clean_stock_data(raw_data)
-portfolio_stats = get_portfolio_stats(cleaned_data)
+using_live_data = True
+
+try:
+    raw_data = fetch_stock_data(PORTFOLIO, period_years=3)
+    if not raw_data or len(raw_data) < len(PORTFOLIO):
+        raise ValueError(f"Only got data for {len(raw_data)}/{len(PORTFOLIO)} tickers")
+    cleaned_data = clean_stock_data(raw_data)
+    portfolio_stats = get_portfolio_stats(cleaned_data)
+    print("[OK] Live data loaded successfully")
+except Exception as e:
+    print(f"[WARN] Live data failed: {e}. Falling back to mock data.")
+    using_live_data = False
+    from data_fetcher_mock import fetch_stock_data as fetch_mock
+    raw_data = fetch_mock(PORTFOLIO, period_years=3)
+    cleaned_data = clean_stock_data(raw_data)
+    portfolio_stats = get_portfolio_stats(cleaned_data)
 
 combined_df = pd.concat(
     [cleaned_data[ticker] for ticker in PORTFOLIO],
     ignore_index=False
 )
 
+data_source_label = "Real-time data from Yahoo Finance" if using_live_data else "Sample data (live data unavailable)"
+data_source_color = "#28a745" if using_live_data else "#ff6b6b"
+
 app.layout = html.Div([
     html.Div([
         html.H1("Stock Portfolio Dashboard", style={'textAlign': 'center', 'marginBottom': 10}),
-        html.P("Real stock data from Yahoo Finance",
-               style={'textAlign': 'center', 'color': '#666', 'fontSize': '14px', 'marginBottom': 10}),
+        html.P(data_source_label,
+               style={'textAlign': 'center', 'color': data_source_color, 'fontSize': '14px', 'marginBottom': 10}),
         html.P(f"Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
                style={'textAlign': 'center', 'color': '#666'}),
     ], style={'backgroundColor': '#f8f9fa', 'padding': '20px', 'marginBottom': '30px'}),
@@ -135,6 +151,5 @@ def update_ma_chart(n):
 if __name__ == '__main__':
     print("\n" + "="*50)
     print("Starting Dashboard...")
-    print("Open http://127.0.0.1:8050 in your browser")
     print("="*50 + "\n")
     app.run_server(debug=False, host='0.0.0.0', port=5000)
