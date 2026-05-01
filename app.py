@@ -137,4 +137,4 @@ if __name__ == '__main__':
     print("Starting Dashboard...")
     print("Open http://127.0.0.1:8050 in your browser")
     print("="*50 + "\n")
-    app.run_server(debug=True)
+    app.run_server(debug=False, host='0.0.0.0', port=5000)

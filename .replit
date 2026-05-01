@@ -1,5 +1,5 @@
 run = "python app_mock.py"
-modules = ["python-3.10:v18-20230608-322e88b"]
+modules = ["python-3.10"]
 
 [packager]
 language = "python3"
@@ -10,3 +10,38 @@ enableGuessImports = true
 
 [env]
 PYTHONUNBUFFERED = "1"
+
+[nix]
+packages = ["glibcLocales"]
+channel = "stable-25_05"
+
+[agent]
+expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pip install -r requirements.txt -q && python app_mock.py"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
